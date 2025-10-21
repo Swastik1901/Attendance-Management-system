@@ -1,0 +1,14 @@
+# Python Virtual Environment
+.venv/
+venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Auto-generated data folder
+# Hamara data_manager.py script isse khud bana lega
+data/
+
+# VS Code settings (Good practice)
+.vscode/

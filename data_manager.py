@@ -1,95 +1,219 @@
-# data_manager.py
+import pandas as pd
 import os
 import json
-import pandas as pd
 from tkinter import messagebox
 
-# Define file paths
-DATA_DIR = "data"
-BATCH_FILE = os.path.join(DATA_DIR, "batches.json")
-ATTENDANCE_FILE = os.path.join(DATA_DIR, "attendance.csv")
+# --- Define filenames ---
+STUDENTS_FILE = 'students.json'
+ATTENDANCE_FILE = 'attendance.csv'
 
+# --- NEW FUNCTION ---
 def setup_files():
-    """Ensures the data directory and necessary files exist."""
-    # Create data directory if it doesn't exist
-    os.makedirs(DATA_DIR, exist_ok=True)
+    """Checks for data files and creates them if they don't exist."""
     
-    # Create sample batch file if it doesn't exist
-    if not os.path.exists(BATCH_FILE):
-        sample_batches = {
-            "CS-101 (Section A)": ["Alice", "Bob", "Charlie", "David"],
-            "CS-102 (Section B)": ["Eve", "Frank", "Grace", "Heidi"],
-            "MATH-201": ["Ivan", "Judy", "Mallory", "Trent"]
+    # 1. Check for students.json
+    if not os.path.exists(STUDENTS_FILE):
+        # --- CHANGED ---
+        # Data structure now includes roll numbers
+        dummy_students = {
+            "CSE(AIML)": [
+                {"roll": "2461001", "name": "Aditya Aman"},
+                {"roll": "2461002", "name": "Adarsha Ghosh"},
+                {"roll": "2461003", "name": "Indranil Chongdar"},
+                {"roll": "2461004", "name": "Arya Biswas"},
+                {"roll": "2461005", "name": "Soumyadip Mitra"},
+                {"roll": "2461006", "name": "Abhishek Saha"},
+                {"roll": "2461008", "name": "Rakesh Adak"},
+                {"roll": "2461010", "name": "Prity Kumari"},
+                {"roll": "2461011", "name": "Koushik Ghosh"},
+                {"roll": "2461012", "name": "Bikram Mondal"},
+                {"roll": "2461013", "name": "Md. Farhan Akhtar"},
+                {"roll": "2461015", "name": "Shivam Kumar Gupta"},
+                {"roll": "2461016", "name": "Himanshu Ranjan"},
+                {"roll": "2461017", "name": "Golu Kumar"},
+                {"roll": "2461018", "name": "Eric Wilson Tirkey"},
+                {"roll": "2461019", "name": "Kannkanaa Sanyal"},
+                {"roll": "2461021", "name": "Arijit Sarkar"},
+                {"roll": "2461022", "name": "Satyam Raj"},
+                {"roll": "2461023", "name": "Tapomay Bandyopadhyay"},
+                {"roll": "2461024", "name": "Sayan Biswas"},
+                {"roll": "2461026", "name": "Baibhab Nag"},
+                {"roll": "2461027", "name": "Soha Alam Mondal"},
+                {"roll": "2461028", "name": "Ritamvar Sen"},
+                {"roll": "2461029", "name": "Debasish Sarkar"},
+                {"roll": "2461030", "name": "Shaurya Veer Singh"},
+                {"roll": "2461031", "name": "Mohikshit Ghorai"},
+                {"roll": "2461032", "name": "Jiya Singh"},
+                {"roll": "2461033", "name": "Yash Aditya"},
+                {"roll": "2461034", "name": "Sambit Sinha"},
+                {"roll": "2461035", "name": "Prakhar Dhangar"},
+                {"roll": "2461036", "name": "Gautam Kumar"},
+                {"roll": "2461038", "name": "Somsubhra Dalui"},
+                {"roll": "2461040", "name": "Tushar Kumar Jha"},
+                {"roll": "2461041", "name": "Goutam Samanta"},
+                {"roll": "2461043", "name": "Anish Khan"},
+                {"roll": "2461045", "name": "Santanu Choudhary"},
+                {"roll": "2461046", "name": "Aarav Kumar"},
+                {"roll": "2461047", "name": "Shekhar Suman"},
+                {"roll": "2461048", "name": "Reetooza Paul"},
+                {"roll": "2461050", "name": "Sadhitra Mondal"},
+                {"roll": "2461051", "name": "K V Rohit"},
+                {"roll": "2461052", "name": "Shruti Kumari"},
+                {"roll": "2461053", "name": "Rahul Kumar "},
+                {"roll": "2461054", "name": "Prayas Mondal"},
+                {"roll": "2461056", "name": "Ashutosh Singh Yadav"},
+                {"roll": "2461057", "name": "Soumyajit Chaudhury"},
+                {"roll": "2461058", "name": "Ashish Kumar Jha"},
+                {"roll": "2461059", "name": " Swastik Kumar"},
+                {"roll": "2461061", "name": "Harsh Vardhan Bhardwaj"},
+                {"roll": "2461062", "name": "Alisha Jaiswal"},
+                {"roll": "2461063", "name": "Anshika Vishwakarma"},
+                {"roll": "2461064", "name": "Ayush Kumar rout"},
+                {"roll": "2461065", "name": "Diganta Parui"},
+                {"roll": "2461066", "name": "Sarthak Choudhuri"},
+                {"roll": "2461069", "name": "Priyanshu Sharma"},
+                {"roll": "2461070", "name": "Ayushi Thakur"},
+                {"roll": "2461071", "name": "Anneshwa Das"},
+                {"roll": "2461073", "name": "PRASANSHA PRIYA"},
+                {"roll": "2461074", "name": "ADRIJA BANERJEE"},
+                {"roll": "2461075", "name": "ANCHAL KUMARI"},
+                {"roll": "2461076", "name": "AASHI KAUR"},
+                {"roll": "2461077", "name": "BHOOMI LADIA"},
+                {"roll": "2461078", "name": "UPASANA MAJUMDER"},
+            ],
+            "ECE-Section A": [
+                {"roll": "ECE/25/001", "name": "Eve"},
+                {"roll": "ECE/25/002", "name": "Frank"},
+                {"roll": "ECE/25/003", "name": "Grace"},
+                {"roll": "ECE/25/004", "name": "Heidi"}
+            ],
+            "ME": [
+                {"roll": "ME/25/001", "name": "Ivan"},
+                {"roll": "ME/25/002", "name": "Judy"},
+                {"roll": "ME/25/003", "name": "Mallory"},
+                {"roll": "ME/25/004", "name": "Niaj"}
+            ]
         }
-        with open(BATCH_FILE, 'w') as f:
-            json.dump(sample_batches, f, indent=4)
-            
-    # Create empty attendance file if it doesn't exist
+        try:
+            with open(STUDENTS_FILE, 'w') as f:
+                json.dump(dummy_students, f, indent=4)
+        except Exception as e:
+            messagebox.showerror("Setup Error", f"Could not create {STUDENTS_FILE}: {e}")
+
+    # 2. Check for attendance.csv
     if not os.path.exists(ATTENDANCE_FILE):
-        df = pd.DataFrame(columns=["date", "batch", "student_name", "status"])
-        df.to_csv(ATTENDANCE_FILE, index=False)
+        try:
+            # --- CHANGED ---
+            # Added 'roll_no' to the headers
+            headers = pd.DataFrame(columns=['roll_no', 'student_name', 'status', 'date', 'batch'])
+            headers.to_csv(ATTENDANCE_FILE, index=False)
+        except Exception as e:
+            messagebox.showerror("Setup Error", f"Could not create {ATTENDANCE_FILE}: {e}")
+
+# --- Existing Functions ---
 
 def load_batches():
-    """Loads the batch dictionary from the JSON file."""
+    """Loads batch names from the students file."""
     try:
-        with open(BATCH_FILE, 'r') as f:
-            return json.load(f)
+        with open(STUDENTS_FILE, 'r') as f:
+            data = json.load(f)
+            return data # Return the whole dict
     except FileNotFoundError:
+        messagebox.showerror("Error", f"{STUDENTS_FILE} not found.")
         return {}
-    except json.JSONDecodeError:
-        messagebox.showerror("Error", f"Could not read {BATCH_FILE}. File may be corrupt.")
+    except Exception as e:
+        messagebox.showerror("Error", f"Error loading batches: {e}")
         return {}
 
 def get_students(batch_name):
-    """Gets the list of students for a specific batch."""
-    batches = load_batches()
-    return batches.get(batch_name, [])
-
-def load_attendance_data():
-    """Loads the entire attendance log into a pandas DataFrame."""
+    """Gets a list of student dicts ({roll, name}) for a batch."""
     try:
-        return pd.read_csv(ATTENDANCE_FILE)
-    except pd.errors.EmptyDataError:
-        return pd.DataFrame(columns=["date", "batch", "student_name", "status"])
+        with open(STUDENTS_FILE, 'r') as f:
+            data = json.load(f)
+            # --- CHANGED ---
+            # This now returns the list of dictionaries
+            return data.get(batch_name, [])
     except FileNotFoundError:
-        messagebox.showerror("Error", f"{ATTENDANCE_FILE} not found.")
-        return pd.DataFrame(columns=["date", "batch", "student_name", "status"])
+        return []
+    except Exception as e:
+        messagebox.showerror("Error", f"Error getting students: {e}")
+        return []
 
-def save_attendance(date, batch, records, overwrite=False):
-    """Saves a new set of attendance records to the CSV."""
+def save_attendance(attendance_date, batch_name, records, overwrite=False):
+    """
+    Saves attendance records to the main CSV file.
+    Assumes 'records' is a list of dicts:
+    [{'roll_no': 'R1', 'student_name': 'S1', 'status': 'P'}, ...]
+    """
+    # --- CHANGED ---
+    # The DataFrame will now automatically include 'roll_no' if it's in 'records'
+    new_df = pd.DataFrame(records)
+    new_df['date'] = attendance_date
+    new_df['batch'] = batch_name
     
-    # 1. Load existing data
-    all_attendance = load_attendance_data()
-    
-    # 2. Check for duplicates
-    date_exists = date in all_attendance['date'].values
-    batch_exists = batch in all_attendance[all_attendance['date'] == date]['batch'].values
-    
-    if date_exists and batch_exists and not overwrite:
-        return (False, f"Attendance for {batch} on {date} already exists.")
+    try:
+        if os.path.exists(ATTENDANCE_FILE):
+            main_df = pd.read_csv(ATTENDANCE_FILE)
+            exists = ((main_df['date'] == attendance_date) & 
+                      (main_df['batch'] == batch_name)).any()
+            
+            if exists:
+                if not overwrite:
+                    return False, "Attendance for this date and batch already exists."
+                main_df = main_df.drop(
+                    main_df[(main_df['date'] == attendance_date) & (main_df['batch'] == batch_name)].index
+                )
+        else:
+            # --- CHANGED ---
+            # Ensure new DataFrame has the 'roll_no' column
+            main_df = pd.DataFrame(columns=['roll_no', 'student_name', 'status', 'date', 'batch'])
 
-    # 3. Prepare new records
-    new_data = []
-    for record in records:
-        new_data.append({
-            'date': date,
-            'batch': batch,
-            'student_name': record['student_name'],
-            'status': record['status']
-        })
-    new_df = pd.DataFrame(new_data)
+        final_df = pd.concat([main_df, new_df], ignore_index=True)
+        final_df.to_csv(ATTENDANCE_FILE, index=False)
+        return True, "Attendance saved successfully."
     
-    # 4. If overwriting, filter out old data
-    if overwrite:
-        all_attendance = all_attendance[
-            ~((all_attendance['date'] == date) & (all_attendance['batch'] == batch))
-        ]
+    except Exception as e:
+        return False, f"An error occurred while saving: {e}"
+
+def get_report_data(batch_name):
+    """Loads and processes all attendance data for a specific batch."""
+    if not os.path.exists(ATTENDANCE_FILE):
+        return None, "No attendance data file found."
+
+    try:
+        df = pd.read_csv(ATTENDANCE_FILE)
+        batch_df = df[df['batch'] == batch_name]
         
-    # 5. Append new data and save
-    final_df = pd.concat([all_attendance, new_df], ignore_index=True)
-    final_df.to_csv(ATTENDANCE_FILE, index=False)
-    
-    if overwrite:
-        return (True, f"Attendance for {batch} on {date} has been overwritten.")
-    else:
-        return (True, f"Attendance for {batch} on {date} has been saved.")
+        if batch_df.empty:
+            return None, "No attendance data found for this batch."
+
+        # --- CHANGED ---
+        # Pivot on both 'roll_no' and 'student_name' to use roll as the unique key
+        report_df = batch_df.pivot_table(
+            index=['roll_no', 'student_name'], 
+            columns='date', 
+            values='status', 
+            aggfunc='first'
+        ).fillna('A') # Fill missing records with 'A' (Absent)
+        
+        report_df['Present'] = (report_df == 'Present').sum(axis=1)
+        report_df['Absent'] = (report_df == 'Absent').sum(axis=1)
+        report_df['Total'] = report_df['Present'] + report_df['Absent']
+        report_df['Percent'] = ((report_df['Present'] / report_df['Total']) * 100).round(1)
+        
+        report_df.reset_index(inplace=True)
+        
+        # --- CHANGED ---
+        # Rename columns for better readability
+        report_df = report_df.rename(columns={'student_name': 'Name', 'roll_no': 'Roll No.'})
+        
+        # --- CHANGED ---
+        # Reorder columns to be more logical, putting Roll No. first
+        date_cols = [col for col in report_df.columns if col not in ['Roll No.', 'Name', 'Present', 'Absent', 'Total', 'Percent']]
+        final_cols = ['Roll No.', 'Name'] + date_cols + ['Present', 'Absent', 'Total', 'Percent']
+        report_df = report_df[final_cols]
+        
+        return report_df, "Report generated successfully."
+
+    except Exception as e:
+        return None, f"Error generating report: {e}"

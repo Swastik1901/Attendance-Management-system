@@ -1,116 +1,139 @@
-# analytics.py
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog, messagebox
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+import data_manager
+
+# Requires 'pip install matplotlib'
+from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from data_manager import load_attendance_data, load_batches
 
-class AnalyticsWindow:
-    """A Toplevel window to display attendance analytics."""
-    def __init__(self, parent):
-        self.window = tk.Toplevel(parent)
-        self.window.title("Attendance Analytics")
-        self.window.geometry("800x600")
+def show_analytics_window(parent, batch_name):
+    """
+    Shows the analytics CHARTS window.
+    """
+    df, msg = data_manager.get_report_data(batch_name)
+    
+    if df is None:
+        messagebox.showinfo("Analytics", msg, parent=parent)
+        return
 
-        # --- Load Data ---
-        self.full_data = load_attendance_data()
-        self.batches = list(load_batches().keys())
+    win = tk.Toplevel(parent)
+    win.title(f"Analytics Charts for {batch_name}")
+    win.geometry("800x600") # Made window a bit wider for clearer labels
 
-        if self.full_data.empty:
-            ttk.Label(self.window, text="No attendance data found to analyze.").pack(pady=20)
-            return
-
-        # --- Controls Frame ---
-        controls_frame = ttk.Frame(self.window, padding=10)
-        controls_frame.pack(fill="x")
-
-        ttk.Label(controls_frame, text="Select Batch:").pack(side="left", padx=5)
-        self.batch_var = tk.StringVar()
-        self.batch_combo = ttk.Combobox(controls_frame, textvariable=self.batch_var,
-                                        values=self.batches)
-        self.batch_combo.pack(side="left", padx=5)
-        self.batch_combo.bind("<<ComboboxSelected>>", self.update_plot)
+    try:
+        fig = Figure(figsize=(8, 6), dpi=100)
+        ax = fig.add_subplot(111)
         
-        if self.batches:
-            self.batch_combo.current(0) # Select the first batch by default
-
-        # --- Plot Frame ---
-        self.plot_frame = ttk.Frame(self.window)
-        self.plot_frame.pack(fill="both", expand=True, padx=10, pady=10)
-
-        # Create Matplotlib Figure and Axis
-        self.fig, self.ax = plt.subplots()
+        # --- FIX 1: Clean data for PLOTTING (Y-axis) ---
+        # (This is still good practice, so we'll keep it)
+        df['Present'] = pd.to_numeric(df['Present'], errors='coerce').fillna(0)
+        df['Absent'] = pd.to_numeric(df['Absent'], errors='coerce').fillna(0)
         
-        # Create Tkinter canvas to embed the plot
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_frame)
-        self.canvas.get_tk_widget().pack(fill="both", expand=True)
+        # --- FIX 2: Correct the 'add' error for LABELS (X-axis) ---
+        # Convert 'Roll No.' to string BEFORE adding it to 'Name'
+        df['Student'] = df['Roll No.'].astype(str) + " - " + df['Name']
+        # --- END OF FIXES ---
 
-        # Initial plot draw
-        self.update_plot()
-
-    def update_plot(self, event=None):
-        """Clears and redraws the plot based on the selected batch."""
-        selected_batch = self.batch_var.get()
-        if not selected_batch:
-            return
-            
-        # 1. Clear the old plot
-        self.ax.clear()
-
-        # 2. Filter data for the selected batch
-        batch_data = self.full_data[self.full_data['batch'] == selected_batch].copy()
+        df.plot(
+            kind='bar', 
+            x='Student',  # Use the new 'Student' column
+            y=['Present', 'Absent'], 
+            ax=ax, 
+            title='Overall Attendance Summary'
+        )
+        # This makes labels readable if there are many students
+        fig.tight_layout() 
         
-        if batch_data.empty:
-            self.ax.set_title(f"No Data for {selected_batch}")
-            self.canvas.draw()
-            return
+        canvas = FigureCanvasTkAgg(fig, master=win)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1, padx=10, pady=10)
 
-        # 3. Use NumPy to convert 'Present'/'Absent' to numbers
-        batch_data['value'] = np.where(batch_data['status'] == 'Present', 1.0, 0.0)
+    except Exception as e:
+        win.destroy()
+        messagebox.showerror("Error", f"Could not generate chart: {e}", parent=parent)
+
+def show_detailed_report_window(parent, batch_name):
+    """
+    Shows the NEW detailed report window (from your screenshot).
+    """
+    df, msg = data_manager.get_report_data(batch_name)
+    
+    if df is None:
+        messagebox.showinfo("Attendance Report", msg, parent=parent)
+        return
+
+    win = tk.Toplevel(parent)
+    win.title(f"Attendance Report (Detailed) - {batch_name}")
+    win.geometry("900x500")
+
+    main_frame = ttk.Frame(win)
+    main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+    # Try to find the max total days, default to 'N/A' if it fails
+    try:
+        total_days = df['Total'].max()
+        title_text = f"Attendance Report ({total_days} days)"
+    except Exception:
+        title_text = "Attendance Report"
+
+    title_label = ttk.Label(main_frame, text=title_text, font=("-weight bold", 16))
+    title_label.pack(pady=10)
+
+    tree_frame = ttk.Frame(main_frame)
+    tree_frame.pack(fill="both", expand=True)
+
+    scroll_y = ttk.Scrollbar(tree_frame, orient="vertical")
+    scroll_x = ttk.Scrollbar(tree_frame, orient="horizontal")
+    
+    tree = ttk.Treeview(tree_frame, 
+                        yscrollcommand=scroll_y.set, 
+                        xscrollcommand=scroll_x.set,
+                        height=15)
+    
+    scroll_y.config(command=tree.yview)
+    scroll_x.config(command=tree.xview)
+
+    scroll_y.pack(side="right", fill="y")
+    scroll_x.pack(side="bottom", fill="x")
+    tree.pack(fill="both", expand=True)
+
+    # This part is dynamic, so it already includes 'Roll No.'
+    all_cols = list(df.columns)
+    tree["columns"] = all_cols
+    tree["show"] = "headings"
+
+    for col in all_cols:
+        tree.heading(col, text=col)
         
-        # 4. Use pandas 'pivot_table' to create the heatmap grid
+        # Added a specific rule for the new 'Roll No.' column
+        if col == "Name":
+            tree.column(col, width=150, anchor="w")
+        elif col == "Roll No.":
+            tree.column(col, width=110, anchor="w")
+        elif col in ['Present', 'Absent', 'Total', 'Percent']:
+            tree.column(col, width=60, anchor="center") # Summary cols
+        else:
+            tree.column(col, width=80, anchor="center") # Date cols
+
+    # This is also dynamic and works perfectly
+    for index, row in df.iterrows():
+        tree.insert("", "end", values=list(row))
+
+    def export_to_csv():
         try:
-            heatmap_data = pd.pivot_table(batch_data,
-                                          values='value',
-                                          index='student_name',
-                                          columns='date',
-                                          aggfunc=np.mean)
-            
-            # Sort by date
-            heatmap_data = heatmap_data.reindex(sorted(heatmap_data.columns), axis=1)
-
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                # --- THIS LINE IS NOW FIXED ---
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                title="Save Report As...",
+                initialfile=f"{batch_name}_report.csv"
+            )
+            if filename:
+                df.to_csv(filename, index=False)
+                messagebox.showinfo("Success", f"Report saved to {filename}", parent=win)
         except Exception as e:
-            self.ax.set_title(f"Could not create plot: {e}")
-            self.canvas.draw()
-            return
-            
-        # 5. --- Create the Heatmap ---
-        # `imshow` creates the colored grid
-        im = self.ax.imshow(heatmap_data, cmap='RdYlGn', aspect='auto') # Red-Yellow-Green colormap
+            messagebox.showerror("Error", f"Could not save file: {e}", parent=win)
 
-        # 6. --- Configure Ticks and Labels ---
-        # Set student names as Y-axis labels
-        self.ax.set_yticks(np.arange(len(heatmap_data.index)))
-        self.ax.set_yticklabels(heatmap_data.index)
-        
-        # Set dates as X-axis labels
-        self.ax.set_xticks(np.arange(len(heatmap_data.columns)))
-        self.ax.set_xticklabels(heatmap_data.columns, rotation=45, ha="right")
-
-        # Add a color bar to show what 0 (Absent) and 1 (Present) mean
-        cbar = self.fig.colorbar(im, ax=self.ax, ticks=[0, 1])
-        cbar.ax.set_yticklabels(['Absent', 'Present'])
-
-        self.ax.set_title(f"Attendance Heatmap for {selected_batch}")
-        self.ax.set_xlabel("Date")
-        self.ax.set_ylabel("Student Name")
-
-        # 7. Redraw the canvas
-        self.fig.tight_layout() # Adjusts plot to prevent labels from overlapping
-        self.canvas.draw()
-
-def show_analytics_window(parent):
-    """Public function to create and show the analytics window."""
-    AnalyticsWindow(parent)
+    export_button = ttk.Button(main_frame, text="Export CSV", command=export_to_csv)
+    export_button.pack(pady=10)

@@ -40,46 +40,46 @@ def setup_files():
                 {"roll": "2461026", "name": "Baibhab Nag"},
                 {"roll": "2461027", "name": "Soha Alam Mondal"},
                 {"roll": "2461028", "name": "Ritamvar Sen"},
-                {"roll": "2461029", "name": "Debasish Sarkar"},
-                {"roll": "2461030", "name": "Shaurya Veer Singh"},
-                {"roll": "2461031", "name": "Mohikshit Ghorai"},
-                {"roll": "2461032", "name": "Jiya Singh"},
-                {"roll": "2461033", "name": "Yash Aditya"},
-                {"roll": "2461034", "name": "Sambit Sinha"},
-                {"roll": "2461035", "name": "Prakhar Dhangar"},
-                {"roll": "2461036", "name": "Gautam Kumar"},
-                {"roll": "2461038", "name": "Somsubhra Dalui"},
-                {"roll": "2461040", "name": "Tushar Kumar Jha"},
-                {"roll": "2461041", "name": "Goutam Samanta"},
-                {"roll": "2461043", "name": "Anish Khan"},
-                {"roll": "2461045", "name": "Santanu Choudhary"},
-                {"roll": "2461046", "name": "Aarav Kumar"},
-                {"roll": "2461047", "name": "Shekhar Suman"},
-                {"roll": "2461048", "name": "Reetooza Paul"},
-                {"roll": "2461050", "name": "Sadhitra Mondal"},
-                {"roll": "2461051", "name": "K V Rohit"},
-                {"roll": "2461052", "name": "Shruti Kumari"},
-                {"roll": "2461053", "name": "Rahul Kumar "},
-                {"roll": "2461054", "name": "Prayas Mondal"},
-                {"roll": "2461056", "name": "Ashutosh Singh Yadav"},
-                {"roll": "2461057", "name": "Soumyajit Chaudhury"},
-                {"roll": "2461058", "name": "Ashish Kumar Jha"},
-                {"roll": "2461059", "name": " Swastik Kumar"},
-                {"roll": "2461061", "name": "Harsh Vardhan Bhardwaj"},
-                {"roll": "2461062", "name": "Alisha Jaiswal"},
-                {"roll": "2461063", "name": "Anshika Vishwakarma"},
-                {"roll": "2461064", "name": "Ayush Kumar rout"},
-                {"roll": "2461065", "name": "Diganta Parui"},
-                {"roll": "2461066", "name": "Sarthak Choudhuri"},
-                {"roll": "2461069", "name": "Priyanshu Sharma"},
-                {"roll": "2461070", "name": "Ayushi Thakur"},
-                {"roll": "2461071", "name": "Anneshwa Das"},
-                {"roll": "2461073", "name": "PRASANSHA PRIYA"},
-                {"roll": "2461074", "name": "ADRIJA BANERJEE"},
-                {"roll": "2461075", "name": "ANCHAL KUMARI"},
-                {"roll": "2461076", "name": "AASHI KAUR"},
-                {"roll": "2461077", "name": "BHOOMI LADIA"},
-                {"roll": "2461078", "name": "UPASANA MAJUMDER"},
+                # {"roll": "2461029", "name": "Debasish Sarkar"},
+                # {"roll": "2461030", "name": "Shaurya Veer Singh"},
+                # {"roll": "2461031", "name": "Mohikshit Ghorai"},
+                # {"roll": "2461032", "name": "Jiya Singh"},
+                # {"roll": "2461033", "name": "Yash Aditya"},
+                # {"roll": "2461034", "name": "Sambit Sinha"},
+                # {"roll": "2461035", "name": "Prakhar Dhangar"},
+                # {"roll": "2461036", "name": "Gautam Kumar"},
+                # {"roll": "2461038", "name": "Somsubhra Dalui"},
+                # {"roll": "2461040", "name": "Tushar Kumar Jha"},
+                # {"roll": "2461041", "name": "Goutam Samanta"},
+                # {"roll": "2461043", "name": "Anish Khan"},
+                # {"roll": "2461045", "name": "Santanu Choudhary"},
+                # {"roll": "2461046", "name": "Aarav Kumar"},
+                # {"roll": "2461047", "name": "Shekhar Suman"},
+                # {"roll": "2461048", "name": "Reetooza Paul"},
+                # {"roll": "2461050", "name": "Sadhitra Mondal"},
+                # {"roll": "2461051", "name": "K V Rohit"},
+                # {"roll": "2461052", "name": "Shruti Kumari"},
+                # {"roll": "2461053", "name": "Rahul Kumar "},
+                # {"roll": "2461054", "name": "Prayas Mondal"},
+                # {"roll": "2461056", "name": "Ashutosh Singh Yadav"},
+                # {"roll": "2461057", "name": "Soumyajit Chaudhury"},
+                # {"roll": "2461058", "name": "Ashish Kumar Jha"},
+                # {"roll": "2461059", "name": " Swastik Kumar"},
+                # {"roll": "2461061", "name": "Harsh Vardhan Bhardwaj"},
+                # {"roll": "2461062", "name": "Alisha Jaiswal"},
+                # {"roll": "2461063", "name": "Anshika Vishwakarma"},
+                # {"roll": "2461064", "name": "Ayush Kumar rout"},
+                # {"roll": "2461065", "name": "Diganta Parui"},
+                # {"roll": "2461066", "name": "Sarthak Choudhuri"},
+                # {"roll": "2461069", "name": "Priyanshu Sharma"},
+                # {"roll": "2461070", "name": "Ayushi Thakur"},
+                # {"roll": "2461071", "name": "Anneshwa Das"},
+                # {"roll": "2461073", "name": "PRASANSHA PRIYA"},
+                # {"roll": "2461074", "name": "ADRIJA BANERJEE"},
+                # {"roll": "2461075", "name": "ANCHAL KUMARI"},
+                # {"roll": "2461076", "name": "AASHI KAUR"},
+                # {"roll": "2461077", "name": "BHOOMI LADIA"},
+                # {"roll": "2461078", "name": "UPASANA MAJUMDER"},
             ],
             "ECE-Section A": [
                 {"roll": "ECE/25/001", "name": "Eve"},
@@ -182,27 +182,48 @@ def get_report_data(batch_name):
 
     try:
         df = pd.read_csv(ATTENDANCE_FILE)
-        batch_df = df[df['batch'] == batch_name]
-        
-        if batch_df.empty:
-            return None, "No attendance data found for this batch."
+        # --- FIX: Ensure 'roll_no' is always treated as a string ---
+        # This prevents dtype mismatch errors during merge.
+        df['roll_no'] = df['roll_no'].astype(str)
+        # --- FIX: Handle case where attendance file exists but is empty ---
+        if df.empty:
+            return None, "No attendance data has been recorded yet."
+            
+        # --- FIX: Ensure all students from the roster are included in the report ---
+        # 1. Get the full student roster for the batch
+        all_students = get_students(batch_name)
+        if not all_students:
+            return None, f"No students found in the roster for batch '{batch_name}'."
 
-        # --- CHANGED ---
-        # Pivot on both 'roll_no' and 'student_name' to use roll as the unique key
-        report_df = batch_df.pivot_table(
-            index=['roll_no', 'student_name'], 
-            columns='date', 
-            values='status', 
-            aggfunc='first'
-        ).fillna('A') # Fill missing records with 'A' (Absent)
-        
+        # Create a base DataFrame from the full roster
+        roster_df = pd.DataFrame(all_students).rename(columns={'roll': 'roll_no', 'name': 'student_name'})
+        # Also ensure the roster's roll_no is a string for consistency
+        roster_df['roll_no'] = roster_df['roll_no'].astype(str)
+
+        # Filter attendance data for the current batch
+        batch_df = df[df['batch'] == batch_name]
+
+        # If attendance data exists, pivot and merge it with the roster
+        if batch_df.empty:
+            # If no attendance records, the report is just the roster
+            report_df = roster_df
+        else:
+            # Pivot the existing attendance data
+            pivot_df = batch_df.pivot_table(
+                index=['roll_no', 'student_name'],
+                columns='date',
+                values='status',
+                aggfunc='first'
+            )
+            # Merge the roster with the pivoted data
+            report_df = pd.merge(roster_df, pivot_df, on=['roll_no', 'student_name'], how='left')
+
         report_df['Present'] = (report_df == 'Present').sum(axis=1)
         report_df['Absent'] = (report_df == 'Absent').sum(axis=1)
         report_df['Total'] = report_df['Present'] + report_df['Absent']
-        report_df['Percent'] = ((report_df['Present'] / report_df['Total']) * 100).round(1)
-        
-        report_df.reset_index(inplace=True)
-        
+        # Use a safe division to prevent errors when Total is 0
+        report_df['Percent'] = (report_df['Present'].div(report_df['Total']).fillna(0) * 100).round(1)
+
         # --- CHANGED ---
         # Rename columns for better readability
         report_df = report_df.rename(columns={'student_name': 'Name', 'roll_no': 'Roll No.'})

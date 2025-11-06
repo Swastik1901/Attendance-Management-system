@@ -77,15 +77,34 @@ class AttendanceFrame(ttk.Frame):
         self.date_entry.pack(side="right", padx=10)
         ttk.Label(top_frame, text="Date (YYYY-MM-DD):").pack(side="right")
 
-        # --- Setup for Scrollable Frame ---
-        
-        self.students_frame_container = ttk.Frame(self)
-        self.students_frame_container.pack(fill="both", expand=True, padx=10)
+        # --- FIX: Create a global bottom bar that is always visible ---
+        global_bottom_frame = ttk.Frame(self)
+        global_bottom_frame.pack(fill="x", side="bottom", pady=(5, 10))
+        back_button = ttk.Button(global_bottom_frame, text="Back to Batches",
+                                 command=lambda: controller.show_frame("BatchSelectFrame"))
+        back_button.pack(side="left", padx=10)
 
-        self.canvas = tk.Canvas(self.students_frame_container, background="#f0f0f0", highlightthickness=0)
-        
-        self.scrollbar = ttk.Scrollbar(self.students_frame_container, orient="vertical", command=self.canvas.yview)
-        
+        # --- NEW: Setup for Notebook (Tabs) ---
+        main_content_frame = ttk.Frame(self) # A frame to hold the notebook
+        main_content_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        self.notebook = ttk.Notebook(main_content_frame)
+        self.notebook.pack(fill="both", expand=True)
+
+        # Create frames for each tab
+        self.attendance_tab = ttk.Frame(self.notebook)
+        self.report_tab = ttk.Frame(self.notebook)
+        self.chart_tab = ttk.Frame(self.notebook)
+
+        self.notebook.add(self.attendance_tab, text="Mark Attendance")
+        self.notebook.add(self.report_tab, text="Detailed Report")
+        self.notebook.add(self.chart_tab, text="Analytics Chart")
+
+        # Bind tab changes to a function that refreshes content
+        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_change)
+
+        # --- Setup for Scrollable Frame (now inside the 'attendance_tab') ---
+        self.canvas = tk.Canvas(self.attendance_tab, background="#f0f0f0", highlightthickness=0)
+        self.scrollbar = ttk.Scrollbar(self.attendance_tab, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas)
 
         # Binding 1: Jab bhi inner frame ka size badle, scroll region update karo
@@ -115,32 +134,33 @@ class AttendanceFrame(ttk.Frame):
         self.canvas.bind('<Leave>', self._unbind_mousewheel)
         
         self.scrollbar.pack(side="right", fill="y")
-        self.canvas.pack(side="left", fill="both", expand=True)
-        
+        # Make the canvas expand to fill the available space in the tab
+        self.canvas.pack(side="top", fill="both", expand=True)
 
-        bottom_frame = ttk.Frame(self)
-        bottom_frame.pack(fill="x", pady=10, side="bottom")
+        # --- FIX: Move the bottom_frame inside the attendance_tab ---
+        # This ensures these buttons are only visible on the correct tab.
+        attendance_bottom_frame = ttk.Frame(self.attendance_tab)
+        attendance_bottom_frame.pack(fill="x", pady=10, side="bottom")
 
-        back_button = ttk.Button(bottom_frame, text="Back to Batches",
-                                 command=lambda: controller.show_frame("BatchSelectFrame"))
-        back_button.pack(side="left", padx=10)
-
-        analytics_button = ttk.Button(bottom_frame, text="Show Charts",
-                                      command=self.show_analytics)
-        analytics_button.pack(side="right", padx=10)
-
-        report_button = ttk.Button(bottom_frame, text="View Report",
-                                     command=self.show_report)
-        report_button.pack(side="right", padx=10)
-
-        save_button = ttk.Button(bottom_frame, text="Save Attendance",
+        save_button = ttk.Button(attendance_bottom_frame, text="Save Attendance",
                                  command=self.save_attendance)
         save_button.pack(side="right", padx=10)
+
+        selection_frame = ttk.Frame(attendance_bottom_frame)
+        selection_frame.pack(expand=True)
+        select_all_button = ttk.Button(selection_frame, text="Select All", command=self.select_all)
+        deselect_all_button = ttk.Button(selection_frame, text="Deselect All", command=self.deselect_all)
+        select_all_button.pack(side="left", padx=5)
+        deselect_all_button.pack(side="left", padx=5)
 
     def refresh_student_list(self, batch_name):
         self.current_batch = batch_name
         self.title_label.config(text=f"Mark Attendance for: {batch_name}")
         
+        # Switch to the first tab whenever a new batch is selected
+        self.notebook.select(self.attendance_tab)
+
+        # Clear old student list
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
         self.student_vars.clear()
@@ -217,19 +237,24 @@ class AttendanceFrame(ttk.Frame):
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {e}")
 
-    def show_report(self):
-        # ... (Yeh function poora same hai, koi change nahi) ...
-        if not self.current_batch:
-            messagebox.showerror("Error", "No batch selected.")
-            return
-        analytics.show_detailed_report_window(self.controller, self.current_batch)
+    def on_tab_change(self, event):
+        """Called when the user switches tabs. Generates content on demand."""
+        selected_tab = self.notebook.index(self.notebook.select())
 
-    def show_analytics(self):
-        # ... (Yeh function poora same hai, koi change nahi) ...
-        if not self.current_batch:
-             messagebox.showerror("Error", "No batch selected.")
-             return
-        analytics.show_analytics_window(self.controller, self.current_batch)
+        if selected_tab == 1: # Detailed Report tab
+            analytics.create_detailed_report(self.report_tab, self.current_batch)
+        elif selected_tab == 2: # Analytics Chart tab
+            analytics.create_analytics_chart(self.chart_tab, self.current_batch)
+
+    def select_all(self):
+        """Sets all student checkboxes to checked (Present)."""
+        for data in self.student_vars.values():
+            data['var'].set(1)
+
+    def deselect_all(self):
+        """Sets all student checkboxes to unchecked (Absent)."""
+        for data in self.student_vars.values():
+            data['var'].set(0)
 
     # --- YEH NAYA SCROLL FUNCTION HAI (ERROR FIXED) ---
     

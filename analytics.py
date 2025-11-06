@@ -3,48 +3,44 @@ from tkinter import ttk, filedialog, messagebox
 import pandas as pd
 import data_manager
 
-# Requires 'pip install matplotlib'
+# Requires:
+# pip install matplotlib
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-def show_analytics_window(parent, batch_name):
+
+def create_analytics_chart(parent_frame, batch_name):
     """
-    Spacious, easy-to-read grouped bar chart for attendance (Present vs Absent).
-    - Wider figure that adapts to number of students
-    - Reduced bar width and extra margins for breathing room
-    - Legend placed above the plot to keep the plotting area clean
+    Creates and embeds a grouped bar chart for attendance into a given parent frame.
     """
     import numpy as np
     from matplotlib import ticker
 
-    df, msg = data_manager.get_report_data(batch_name)
-    if df is None:
-        messagebox.showinfo("Analytics", msg, parent=parent)
-        return
+    # Clear any previous widgets in the frame
+    for widget in parent_frame.winfo_children():
+        widget.destroy()
 
-    # Create window
-    win = tk.Toplevel(parent)
-    win.title(f"Analytics Charts for {batch_name}")
-    # Make window larger to display the roomy chart
-    win.geometry("1200x850")
+    df, msg = data_manager.get_report_data(batch_name)
+    if df is None or df.empty:
+        ttk.Label(parent_frame, text=msg, style="Header.TLabel").pack(pady=50)
+        return
 
     try:
         # Ensure numeric columns
         df['Present'] = pd.to_numeric(df['Present'], errors='coerce').fillna(0).astype(int)
         df['Absent']  = pd.to_numeric(df['Absent'],  errors='coerce').fillna(0).astype(int)
 
-        # Create combined Student label
-        df['Roll No.'] = df.get('Roll No.', df.index).astype(str)
+        # Ensure 'Roll No.' column exists and is a string for label creation
         df['Student'] = df['Roll No.'].astype(str) + " - " + df['Name'].astype(str)
 
         n = len(df)
         # Figure size: widen when many students
-        fig_w = max(12, n * 0.9)   # base width 12, add width per student
+        fig_w = max(12, n * 1.2)   # Increased multiplier for more space per student
         fig_h = 9                   # taller for more vertical space
         fig = Figure(figsize=(fig_w, fig_h), dpi=140)
         ax = fig.add_subplot(111)
 
         indices = np.arange(n)
-        bar_width = 0.28  # slightly narrower so bars don't touch
+        bar_width = 0.25  # Slightly reduced bar width for more space between bars
 
         # Bars with solid edge so each bar stands out
         present_bars = ax.bar(indices - bar_width/2, df['Present'],
@@ -61,7 +57,8 @@ def show_analytics_window(parent, batch_name):
 
         # X ticks and smaller student name font
         ax.set_xticks(indices)
-        label_fontsize = 9 if n <= 10 else 7   # smaller when many students
+        # Use full student name for labels
+        label_fontsize = 9 if n <= 15 else 7   # smaller when many students
         rotation = 30 if n <= 12 else 60
         ax.set_xticklabels(df['Student'], rotation=rotation, ha='right', fontsize=label_fontsize)
 
@@ -71,47 +68,40 @@ def show_analytics_window(parent, batch_name):
         ax.tick_params(axis='x', labelsize=label_fontsize)
 
         # Provide extra space at left/right of bars so they don't touch axis edges
-        ax.set_xlim(-0.6, n - 0.4)
+        ax.set_xlim(-0.7, n - 0.3) # Adjusted limits for more padding
         ax.margins(x=0.02)
 
         # Gridlines
         ax.grid(axis='y', linestyle='--', alpha=0.45)
 
         # Put legend above the chart (keeps plotting area spacious)
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.08), ncol=2, fontsize=12, frameon=False)
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.09), ncol=2, fontsize=12, frameon=False) # Slightly higher legend
 
         # Increase the margins around the plot area so labels & legend have room
-        fig.subplots_adjust(left=0.07, right=0.97, top=0.86, bottom=0.24)
+        fig.subplots_adjust(left=0.06, right=0.98, top=0.88, bottom=0.26) # Adjusted margins
 
         # Embed in Tk window
-        canvas = FigureCanvasTkAgg(fig, master=win)
+        canvas = FigureCanvasTkAgg(fig, master=parent_frame)
         canvas.draw()
         widget = canvas.get_tk_widget()
-        widget.pack(side=tk.TOP, fill=tk.BOTH, expand=1, padx=14, pady=14)
+        widget.pack(side=tk.TOP, fill=tk.BOTH, expand=1, padx=20, pady=20) # Increased padding
 
     except Exception as e:
-        win.destroy()
-        messagebox.showerror("Error", f"Could not generate chart: {e}", parent=parent)
+        messagebox.showerror("Chart Error", f"Could not generate chart: {e}", parent=parent_frame)
 
 
-
-
-def show_detailed_report_window(parent, batch_name):
+def create_detailed_report(parent_frame, batch_name):
     """
-    Shows the NEW detailed report window (from your screenshot).
+    Creates and embeds a detailed report Treeview into a given parent frame.
     """
+    # Clear any previous widgets in the frame
+    for widget in parent_frame.winfo_children():
+        widget.destroy()
+        
     df, msg = data_manager.get_report_data(batch_name)
-    
-    if df is None:
-        messagebox.showinfo("Attendance Report", msg, parent=parent)
+    if df is None or df.empty:
+        ttk.Label(parent_frame, text=msg, style="Header.TLabel").pack(pady=50)
         return
-
-    win = tk.Toplevel(parent)
-    win.title(f"Attendance Report (Detailed) - {batch_name}")
-    win.geometry("900x500")
-
-    main_frame = ttk.Frame(win)
-    main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
     # Try to find the max total days, default to 'N/A' if it fails
     try:
@@ -120,10 +110,10 @@ def show_detailed_report_window(parent, batch_name):
     except Exception:
         title_text = "Attendance Report"
 
-    title_label = ttk.Label(main_frame, text=title_text, font=("-weight bold", 16))
+    title_label = ttk.Label(parent_frame, text=title_text, font=("-weight bold", 16))
     title_label.pack(pady=10)
 
-    tree_frame = ttk.Frame(main_frame)
+    tree_frame = ttk.Frame(parent_frame)
     tree_frame.pack(fill="both", expand=True)
 
     scroll_y = ttk.Scrollbar(tree_frame, orient="vertical")
@@ -174,9 +164,9 @@ def show_detailed_report_window(parent, batch_name):
             )
             if filename:
                 df.to_csv(filename, index=False)
-                messagebox.showinfo("Success", f"Report saved to {filename}", parent=win)
+                messagebox.showinfo("Success", f"Report saved to {filename}", parent=parent_frame)
         except Exception as e:
-            messagebox.showerror("Error", f"Could not save file: {e}", parent=win)
+            messagebox.showerror("Error", f"Could not save file: {e}", parent=parent_frame)
 
-    export_button = ttk.Button(main_frame, text="Export CSV", command=export_to_csv)
+    export_button = ttk.Button(parent_frame, text="Export CSV", command=export_to_csv)
     export_button.pack(pady=10)
